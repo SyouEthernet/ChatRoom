@@ -1,15 +1,19 @@
 package com.syou.chatroom;
 
 import com.syou.chatroom.handler.ClientHandler;
+import com.syou.chatroom.utils.CloseUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +23,8 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
     private ClientListener mListener;
     private List<ClientHandler> clientHandlerList = new ArrayList<>();
     private final ExecutorService forwardingTreadPoolExecutor;
+    private Selector selector;
+    ServerSocketChannel server;
 
     public TCPServer(int port) {
         this.port = port;
@@ -27,7 +33,18 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
 
     public boolean start() {
         try {
-            ClientListener clientListener = new ClientListener(port);
+            selector = Selector.open();
+            ServerSocketChannel server = ServerSocketChannel.open();
+            // set non-blocking
+            server.configureBlocking(false);
+            // bind port
+            server.socket().bind(new InetSocketAddress(port));
+            server.register(selector, SelectionKey.OP_ACCEPT);
+            System.out.println("Server info: " + server.getLocalAddress().toString());
+            this.server = server;
+
+            // start client listen
+            ClientListener clientListener = new ClientListener();
             mListener = clientListener;
             clientListener.start();
         } catch (Exception e) {
@@ -41,6 +58,9 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
         if (mListener != null) {
             mListener.exit();
         }
+
+        CloseUtils.close(server);
+        CloseUtils.close(selector);
 
         synchronized (TCPServer.this) {
             for (ClientHandler clientHandler :
@@ -67,11 +87,10 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
 
     @Override
     public synchronized void onNewMessageArrived(ClientHandler clientHandler, String str) {
-        System.out.println("Received-" + clientHandler.getClientInfo() + ":" + str);
         forwardingTreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                for (ClientHandler client: clientHandlerList) {
+                for (ClientHandler client : clientHandlerList) {
                     if (client.equals(clientHandler)) {
                         continue;
                     }
@@ -83,58 +102,58 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
 
     private class ClientListener extends Thread {
         private boolean done = false;
-        private ServerSocket serverSocket;
-
-        public ClientListener(int port) throws IOException {
-            serverSocket = new ServerSocket(port);
-            System.out.println("Server info: " + serverSocket.getInetAddress() + "\tport:" + serverSocket.getLocalPort());
-        }
 
         @Override
         public void run() {
             super.run();
 
+            Selector selector = TCPServer.this.selector;
             System.out.println("server ready!");
 
-            Socket client;
             while (!done) {
                 try {
-                    client = serverSocket.accept();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-                try {
-                    // async clienthandler construct
-                    ClientHandler clientHandler = new ClientHandler(client, TCPServer.this);
-                    // start to read and print
-                    clientHandler.readToPrint();
-                    synchronized (TCPServer.this) {
-                        clientHandlerList.add(clientHandler);
+                    if (selector.select() == 0) {
+                        if (done) {
+                            break;
+                        }
+                        continue;
+                    }
+
+                    Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                    while (iterator.hasNext()) {
+                        if (done) {
+                            break;
+                        }
+                        SelectionKey key = iterator.next();
+                        iterator.remove();
+
+                        if (key.isAcceptable()) {
+                            ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+                            // non-blocking get a client
+                            SocketChannel socketChannel = serverSocketChannel.accept();
+                            try {
+                                // async clienthandler construct
+                                ClientHandler clientHandler = new ClientHandler(socketChannel, TCPServer.this);
+                                synchronized (TCPServer.this) {
+                                    clientHandlerList.add(clientHandler);
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                System.out.println("client connect exception" + e.getMessage());
+                            }
+                        }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("client connect exception" + e.getMessage());
+                    continue;
                 }
             }
 
             System.out.println("server closed!");
         }
 
-        void close() {
-            if (serverSocket != null) {
-                try {
-                    serverSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                serverSocket = null;
-            }
-        }
-
         public void exit() {
             done = true;
-            close();
+            selector.wakeup();
             System.out.println("ClientListener exited.");
         }
     }

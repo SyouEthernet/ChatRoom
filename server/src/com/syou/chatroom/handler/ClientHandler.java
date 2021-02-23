@@ -1,26 +1,51 @@
 package com.syou.chatroom.handler;
 
+import com.syou.chatroom.core.Connector;
 import com.syou.chatroom.utils.CloseUtils;
 
 import java.io.*;
-import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ClientHandler {
-    private final Socket client;
-    private final ClientReadHandler readHandler;
+    private final SocketChannel socketChannel;
+    private final Connector connector;
     private final ClientWriteHandler writeHandler;
     private final ClientHandlerCallback clientHandlerCallback;
     private final String clientInfo;
 
-    public ClientHandler(Socket client, ClientHandlerCallback clientHandlerCallback) throws IOException {
-        this.client = client;
-        this.readHandler = new ClientReadHandler(client.getInputStream());
-        this.writeHandler = new ClientWriteHandler(client.getOutputStream());
+    public ClientHandler(SocketChannel socketChannel, ClientHandlerCallback clientHandlerCallback) throws IOException {
+        this.socketChannel = socketChannel;
+
+        connector = new Connector() {
+            @Override
+            public void onChannelClosed(SocketChannel channel) {
+                super.onChannelClosed(channel);
+                exitBySelf();
+            }
+
+            @Override
+            protected void onReceiveNewMessage(String str) {
+                super.onReceiveNewMessage(str);
+                clientHandlerCallback.onNewMessageArrived(ClientHandler.this, str);
+            }
+        };
+        connector.setup(socketChannel);
+
+
+        Selector writeSelector = Selector.open();
+        socketChannel.register(writeSelector, SelectionKey.OP_WRITE);
+        this.writeHandler = new ClientWriteHandler(writeSelector);
+
         this.clientHandlerCallback = clientHandlerCallback;
-        this.clientInfo = "A["+client.getInetAddress()+"]P["+client.getPort()+"]";
-        System.out.println("new client connected:" + clientInfo);
+        this.clientInfo = "A["+socketChannel.getRemoteAddress().toString()+"]P["+socketChannel.socket().getPort()+"]";
+        System.out.println("new socketChannel connected:" + clientInfo);
     }
 
     public String getClientInfo() {
@@ -28,18 +53,14 @@ public class ClientHandler {
     }
 
     public void exit() {
-        readHandler.exit();
+        CloseUtils.close(connector);
         writeHandler.exit();
-        CloseUtils.close(client);
-        System.out.println("client finished:" + client.getInetAddress() + "\tport:" + client.getPort());
+        CloseUtils.close(socketChannel);
+        System.out.println("client finished:" + clientInfo);
     }
 
     public void send(String str) {
         writeHandler.send(str);
-    }
-
-    public void readToPrint() {
-        readHandler.start();
     }
 
     private void exitBySelf() {
@@ -52,65 +73,21 @@ public class ClientHandler {
         void onNewMessageArrived(ClientHandler clientHandler, String str);
     }
 
-    class ClientReadHandler extends Thread {
-        private boolean done = false;
-        private final InputStream inputStream;
-
-        public ClientReadHandler(InputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            try {
-                // get inputStream for data receive
-                BufferedReader socketInput = new BufferedReader(new InputStreamReader(inputStream));
-
-                do {
-                    // get one line data
-                    String str = socketInput.readLine();
-                    if (str == null) {
-                        System.out.println("client cannot read data!");
-                        // exit client
-                        ClientHandler.this.exitBySelf();
-                        break;
-                    }
-
-                    System.out.println(str);
-                    clientHandlerCallback.onNewMessageArrived(ClientHandler.this, str);
-                } while (!done);
-                socketInput.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (!done) {
-                    System.out.println("exception disconnect");
-                    ClientHandler.this.exitBySelf();
-                }
-            } finally {
-                CloseUtils.close(inputStream);
-            }
-        }
-
-        void exit() {
-            done = true;
-            CloseUtils.close(inputStream);
-        }
-    }
-
     class ClientWriteHandler {
         private boolean done = false;
-        private final PrintStream printStream;
+        private final Selector selector;
+        private final ByteBuffer byteBuffer;
         private final ExecutorService executorService;
 
-        public ClientWriteHandler(OutputStream outputStream) {
-            this.printStream = new PrintStream(outputStream);
+        public ClientWriteHandler(Selector selector) {
+            this.selector = selector;
+            this.byteBuffer = ByteBuffer.allocate(256);
             this.executorService = Executors.newSingleThreadExecutor();
         }
 
         void exit() {
             done = true;
-            CloseUtils.close(printStream);
+            CloseUtils.close(selector);
             executorService.shutdownNow();
         }
 
@@ -125,7 +102,7 @@ public class ClientHandler {
             private final String msg;
 
             public WriteRunnable(String msg) {
-                this.msg = msg;
+                this.msg = msg + '\n';
             }
 
             @Override
@@ -133,10 +110,23 @@ public class ClientHandler {
                 if (ClientWriteHandler.this.done) {
                     return;
                 }
-                try {
-                    ClientWriteHandler.this.printStream.println(msg);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                byteBuffer.clear();
+                byteBuffer.put(msg.getBytes());
+
+                // flip byteBuffer;
+                byteBuffer.flip();
+
+                while(!done && byteBuffer.hasRemaining()) {
+                    try {
+                        int len = socketChannel.write(byteBuffer);
+                        if (len < 0) {
+                            System.out.println("client cannot write data!");
+                            ClientHandler.this.exitBySelf();
+                            break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

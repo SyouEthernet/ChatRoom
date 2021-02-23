@@ -1,6 +1,8 @@
 package com.syou.chatroom;
 
 import com.syou.chatroom.constants.TCPConstants;
+import com.syou.chatroom.core.IoContext;
+import com.syou.chatroom.impl.IoSelectorProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +10,8 @@ import java.io.InputStreamReader;
 
 public class Server {
     public static void main(String[] args) throws IOException {
+        IoContext.setup().ioPorvider(new IoSelectorProvider()).start();
+
         TCPServer tcpServer = new TCPServer(TCPConstants.PORT_SERVER);
         boolean isSucceed = tcpServer.start();
         if (!isSucceed) {
@@ -26,5 +30,6 @@ public class Server {
 
         UDPProvider.stop();
         tcpServer.stop();
+        IoContext.close();
     }
 }

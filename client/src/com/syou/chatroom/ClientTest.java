@@ -25,6 +25,7 @@ public class ClientTest {
                 TCPClient tcpClient = TCPClient.startWith(info);
                 if (tcpClient == null) {
                     System.out.println("connect error");
+                    continue;
                 }
                 tcpClients.add(tcpClient);
                 System.out.println("connect success.");
@@ -48,7 +49,7 @@ public class ClientTest {
                     tcpClient.send("Hello.");
                 }
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
