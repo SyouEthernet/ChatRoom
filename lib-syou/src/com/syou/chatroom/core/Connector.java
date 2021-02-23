@@ -1,6 +1,10 @@
 package com.syou.chatroom.core;
 
+import com.syou.chatroom.box.StringReceivePacket;
+import com.syou.chatroom.box.StringSendPacket;
 import com.syou.chatroom.impl.SocketChannelAdapter;
+import com.syou.chatroom.impl.async.AsyncReceiveDispatcher;
+import com.syou.chatroom.impl.async.AsyncSendDispatcher;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,6 +16,8 @@ public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatu
     private SocketChannel channel;
     private Sender sender;
     private Receiver receiver;
+    private SendDispacher sendDispacher;
+    private ReceiveDispatcher receiveDispatcher;
 
     public void setup(SocketChannel socketChannel) throws IOException {
         this.channel = socketChannel;
@@ -22,22 +28,26 @@ public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatu
         this.sender = adapter;
         this.receiver = adapter;
 
-        readNextMessage();
+        sendDispacher = new AsyncSendDispatcher(sender);
+        receiveDispatcher = new AsyncReceiveDispatcher(receiver, receivePacketCallback);
+
+        //start receive
+        receiveDispatcher.start();
     }
 
-    private void readNextMessage() {
-        if (receiver != null) {
-            try {
-                receiver.receiveAsync(echoReceiveListener);
-            } catch (IOException e) {
-                System.out.println("receive message error:" + e.getMessage());
-            }
-        }
+    public void send(String msg) {
+        SendPacket packet = new StringSendPacket(msg);
+        sendDispacher.send(packet);
     }
+
 
     @Override
     public void close() throws IOException {
-
+        receiveDispatcher.close();
+        sendDispacher.close();
+        sender.close();
+        receiver.close();
+        channel.close();
     }
 
     @Override
@@ -45,20 +55,15 @@ public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatu
 
     }
 
-    private IoArgs.IoArgsEventListener echoReceiveListener = new IoArgs.IoArgsEventListener() {
-        @Override
-        public void onStarted(IoArgs args) {
-
-        }
-
-        @Override
-        public void onCompleteed(IoArgs args) {
-            onReceiveNewMessage(args.bufferString());
-            readNextMessage();
-        }
-    };
 
     protected  void onReceiveNewMessage(String str) {
         System.out.println(key.toString() + ":" + str);
     }
+
+    private ReceiveDispatcher.ReceivePacketCallback receivePacketCallback = packet -> {
+        if (packet instanceof StringReceivePacket) {
+            String msg = ((StringReceivePacket) packet).string();
+            onReceiveNewMessage(msg);
+        }
+    };
 }

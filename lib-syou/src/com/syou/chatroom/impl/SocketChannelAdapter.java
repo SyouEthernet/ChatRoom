@@ -20,6 +20,8 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
     private IoArgs.IoArgsEventListener reveiveIoEventListener;
     private IoArgs.IoArgsEventListener sendIoEventListener;
 
+    private IoArgs receiveArgsTemp;
+
     public SocketChannelAdapter(SocketChannel channel, IoProvider ioProvider, OnChannelStatusChangedListener listener) throws IOException {
         this.channel = channel;
         this.ioProvider = ioProvider;
@@ -29,12 +31,16 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
     }
 
     @Override
-    public boolean receiveAsync(IoArgs.IoArgsEventListener listener) throws IOException {
-        if (isClosed.get()) {
-            throw new IOException("Current channel is closed.");
-        }
-        reveiveIoEventListener = listener;
+    public void setReceiveListener(IoArgs.IoArgsEventListener listener) {
+        this.reveiveIoEventListener = listener;
+    }
 
+    @Override
+    public boolean receiveAsync(IoArgs args) throws IOException {
+        if (isClosed.get()) {
+            throw new IOException("Current channel is closed!");
+        }
+        receiveArgsTemp = args;
         return ioProvider.registerInput(channel, inputCallback);
     }
 
@@ -65,21 +71,18 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
             if (isClosed.get()) {
                 return;
             }
-            IoArgs args = new IoArgs();
-            IoArgs.IoArgsEventListener receiveIoEventListener = SocketChannelAdapter.this.reveiveIoEventListener;
+            IoArgs args = receiveArgsTemp;
+            IoArgs.IoArgsEventListener listener = SocketChannelAdapter.this.reveiveIoEventListener;
 
-            if (listener != null) {
-                receiveIoEventListener.onStarted(args);
-            }
+            listener.onStarted(args);
 
             try {
-                if(args.read(channel) > 0 && listener != null) {
-                    receiveIoEventListener.onCompleteed(args);
+                if(args.readFrom(channel) > 0 && listener != null) {
+                    listener.onCompleteed(args);
                 } else {
                     throw new IOException("Cannot read any data!");
                 }
             } catch (IOException e) {
-                e.printStackTrace();
                 CloseUtils.close(SocketChannelAdapter.this);
             }
         }
@@ -91,8 +94,19 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
             if (isClosed.get()) {
                 return;
             }
-            // TODO
-            sendIoEventListener.onCompleteed(null);
+            IoArgs args = getAttach();
+            IoArgs.IoArgsEventListener listener = sendIoEventListener;
+            listener.onStarted(args);
+
+            try {
+                if(args.writeTo(channel) > 0) {
+                    listener.onCompleteed(args);
+                } else {
+                    throw new IOException("Cannot write any data!");
+                }
+            } catch (IOException e) {
+                CloseUtils.close(SocketChannelAdapter.this);
+            }
         }
     };
 
