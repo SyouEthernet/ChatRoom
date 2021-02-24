@@ -2,38 +2,49 @@ package com.syou.chatroom.core;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.ExecutorService;
 
 public class IoArgs {
     private int limit = 5;
-    private byte[] byteBuffer = new byte[5];
-    private ByteBuffer buffer = ByteBuffer.wrap(byteBuffer);
+    private ByteBuffer buffer = ByteBuffer.allocate(5);
 
     /**
      * read data frome bytes
-     *
-     * @param bytes
-     * @param offset
-     * @return
      */
-    public int readFrom(byte[] bytes, int offset) {
-        int size = Math.min(bytes.length - offset, buffer.remaining());
-        buffer.put(bytes, offset, size);
-        return size;
+    public int readFrom(ReadableByteChannel channel) throws IOException{
+        startWriting();
+        int bytesProduced = 0;
+        int len;
+        do {
+            len = channel.read(buffer);
+            if (len < 0) {
+                throw new EOFException();
+            }
+            bytesProduced += len;
+        } while (buffer.hasRemaining() && len != 0);
+        finishWriting();
+        return bytesProduced;
     }
 
     /**
      * write data to bytes
-     *
-     * @param bytes
-     * @param offset
-     * @return
      */
-    public int writeTo(byte[] bytes, int offset) {
-        int size = Math.min(bytes.length - offset, buffer.remaining());
-        buffer.get(bytes, offset, size);
-        return size;
+    public int writeTo(WritableByteChannel channel) throws IOException {
+        int bytesProduced = 0;
+        while (buffer.hasRemaining()) {
+            int len = channel.write(buffer);
+            if (len < 0) {
+                throw new EOFException();
+            }
+            bytesProduced += len;
+        }
+        return bytesProduced;
     }
 
     /**
@@ -100,7 +111,9 @@ public class IoArgs {
     }
 
     public void writeLength(int total) {
+        startWriting();
         buffer.putInt(total);
+        finishWriting();
     }
 
     public int readLength() {
@@ -111,9 +124,11 @@ public class IoArgs {
         return buffer.capacity();
     }
 
-    public interface IoArgsEventListener {
-        void onStarted(IoArgs args);
+    public interface IoArgsEventProcessor {
+        IoArgs provideIoArgs();
 
-        void onCompleteed(IoArgs args);
+        void onConsumeFailed(IoArgs args, Exception e);
+
+        void onConsumeCompleted(IoArgs args);
     }
 }

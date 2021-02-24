@@ -1,8 +1,9 @@
 package com.syou.chatroom.core;
 
+import java.io.OutputStream;
+
 /**
  * receive packet
  */
-public abstract class ReceivePacket extends Packet{
-    public abstract void save(byte[] bytes, int count);
+public abstract class ReceivePacket<T extends OutputStream> extends Packet<T>{
 }

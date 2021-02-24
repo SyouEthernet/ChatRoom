@@ -5,24 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7c022170-6b7a-4c2f-9174-e56d4d9abb50" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringReceivePacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringSendPacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Packet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceiveDispatcher.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceivePacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendDispacher.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendPacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncReceiveDispatcher.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncSendDispatcher.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/FileSendPacket.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/com/syou/chatroom/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/com/syou/chatroom/TCPClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/TCPClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Connector.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Connector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringReceivePacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringReceivePacket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringSendPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringSendPacket.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoArgs.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoArgs.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Packet.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Packet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceivePacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceivePacket.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Receiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Receiver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendPacket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Sender.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/SocketChannelAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/SocketChannelAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/com/syou/chatroom/handler/ClientHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/com/syou/chatroom/handler/ClientHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncReceiveDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncReceiveDispatcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncSendDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncSendDispatcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/utils/CloseUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/utils/CloseUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,6 +105,11 @@
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="configurable.group.tools" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.syou.chatroom.box" />
+    </key>
   </component>
   <component name="RunManager" selected="Application.Client">
     <configuration name="Client" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">

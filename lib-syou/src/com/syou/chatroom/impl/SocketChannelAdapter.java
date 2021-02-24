@@ -17,10 +17,8 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
     private final IoProvider ioProvider;
     private final OnChannelStatusChangedListener listener;
 
-    private IoArgs.IoArgsEventListener reveiveIoEventListener;
-    private IoArgs.IoArgsEventListener sendIoEventListener;
-
-    private IoArgs receiveArgsTemp;
+    private IoArgs.IoArgsEventProcessor reveiveIoEventProcessor;
+    private IoArgs.IoArgsEventProcessor sendIoEventProcessor;
 
     public SocketChannelAdapter(SocketChannel channel, IoProvider ioProvider, OnChannelStatusChangedListener listener) throws IOException {
         this.channel = channel;
@@ -31,26 +29,28 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
     }
 
     @Override
-    public void setReceiveListener(IoArgs.IoArgsEventListener listener) {
-        this.reveiveIoEventListener = listener;
+    public void setReceiveListener(IoArgs.IoArgsEventProcessor processor) {
+        reveiveIoEventProcessor = processor;
     }
 
     @Override
-    public boolean receiveAsync(IoArgs args) throws IOException {
+    public boolean postReceiveAsync() throws IOException {
         if (isClosed.get()) {
             throw new IOException("Current channel is closed!");
         }
-        receiveArgsTemp = args;
         return ioProvider.registerInput(channel, inputCallback);
     }
 
     @Override
-    public boolean sendAsync(IoArgs args, IoArgs.IoArgsEventListener listener) throws IOException {
+    public void setSendListener(IoArgs.IoArgsEventProcessor processor) {
+        sendIoEventProcessor = processor;
+    }
+
+    @Override
+    public boolean postSendAsync() throws IOException {
         if (isClosed.get()) {
             throw new IOException("Current channel is closed.");
         }
-        sendIoEventListener = listener;
-        outputCallback.setAttach(args);
         return ioProvider.registerOutput(channel, outputCallback);
     }
 
@@ -71,16 +71,14 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
             if (isClosed.get()) {
                 return;
             }
-            IoArgs args = receiveArgsTemp;
-            IoArgs.IoArgsEventListener listener = SocketChannelAdapter.this.reveiveIoEventListener;
-
-            listener.onStarted(args);
+            IoArgs.IoArgsEventProcessor processor = reveiveIoEventProcessor;
+            IoArgs args = processor.provideIoArgs();
 
             try {
                 if(args.readFrom(channel) > 0 && listener != null) {
-                    listener.onCompleteed(args);
+                    processor.onConsumeCompleted(args);
                 } else {
-                    throw new IOException("Cannot read any data!");
+                    processor.onConsumeFailed(args, new IOException("Cannot read any data!"));
                 }
             } catch (IOException e) {
                 CloseUtils.close(SocketChannelAdapter.this);
@@ -90,19 +88,17 @@ public class SocketChannelAdapter implements Sender, Receiver, Closeable {
 
     private final IoProvider.HandleOutputCallback outputCallback = new IoProvider.HandleOutputCallback() {
         @Override
-        protected void canProviderOutput(Object attach) {
+        protected void canProviderOutput() {
             if (isClosed.get()) {
                 return;
             }
-            IoArgs args = getAttach();
-            IoArgs.IoArgsEventListener listener = sendIoEventListener;
-            listener.onStarted(args);
-
+            IoArgs.IoArgsEventProcessor processor = sendIoEventProcessor;
+            IoArgs args = processor.provideIoArgs();
             try {
                 if(args.writeTo(channel) > 0) {
-                    listener.onCompleteed(args);
+                    processor.onConsumeCompleted(args);
                 } else {
-                    throw new IOException("Cannot write any data!");
+                    processor.onConsumeFailed(args, new IOException("Cannot write any data!"));
                 }
             } catch (IOException e) {
                 CloseUtils.close(SocketChannelAdapter.this);
