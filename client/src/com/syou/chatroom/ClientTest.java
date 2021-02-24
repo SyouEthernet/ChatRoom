@@ -2,12 +2,14 @@ package com.syou.chatroom;
 
 import com.syou.chatroom.bean.ServerInfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClientTest {
     private static boolean done = false;
+    private static File cachePath = Foo.getCacheDir("client");
 
     public static void main(String[] args) throws IOException {
         ServerInfo info = ClientSearcher.searchServer(10000);
@@ -22,7 +24,7 @@ public class ClientTest {
         final List<TCPClient> tcpClients = new ArrayList<>();
         for (int i = 0; i< 10; i++) {
             try {
-                TCPClient tcpClient = TCPClient.startWith(info);
+                TCPClient tcpClient = TCPClient.startWith(info, cachePath);
                 if (tcpClient == null) {
                     System.out.println("connect error");
                     continue;

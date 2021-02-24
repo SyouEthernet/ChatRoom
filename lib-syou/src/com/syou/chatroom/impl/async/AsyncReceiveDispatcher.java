@@ -1,10 +1,7 @@
 package com.syou.chatroom.impl.async;
 
 import com.syou.chatroom.box.StringReceivePacket;
-import com.syou.chatroom.core.IoArgs;
-import com.syou.chatroom.core.ReceiveDispatcher;
-import com.syou.chatroom.core.ReceivePacket;
-import com.syou.chatroom.core.Receiver;
+import com.syou.chatroom.core.*;
 import com.syou.chatroom.utils.CloseUtils;
 
 import java.io.IOException;
@@ -19,7 +16,7 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsE
     private final ReceivePacketCallback callback;
 
     private IoArgs ioArgs = new IoArgs();
-    private ReceivePacket<?> packetTemp;
+    private ReceivePacket<?, ?> packetTemp;
     private WritableByteChannel packetChannel;
     private long total;
     private int position;
@@ -84,7 +81,10 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsE
     private void assemblePacket(IoArgs args) {
         if (packetTemp == null) {
             int length = args.readLength();
-            packetTemp = new StringReceivePacket(length);
+            byte type = length > 200 ? Packet.TYPE_STREAM_FILE : Packet.TYPE_MEMORY_STRING;
+
+
+            packetTemp = callback.onArrivedNewPacket(type, length);
             packetChannel = Channels.newChannel(packetTemp.open());
 
             total = length;

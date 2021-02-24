@@ -6,7 +6,6 @@ import java.io.*;
 
 public class FileSendPacket extends SendPacket<FileInputStream> {
     private final File file;
-    private InputStream stream;
 
     public FileSendPacket(File file) {
         this.file = file;
@@ -15,6 +14,15 @@ public class FileSendPacket extends SendPacket<FileInputStream> {
 
     @Override
     protected FileInputStream createStream() {
-        return null;
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public byte type() {
+        return TYPE_STREAM_FILE;
     }
 }

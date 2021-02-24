@@ -2,23 +2,42 @@ package com.syou.chatroom;
 
 import com.syou.chatroom.bean.ServerInfo;
 import com.syou.chatroom.core.Connector;
+import com.syou.chatroom.core.Packet;
+import com.syou.chatroom.core.ReceivePacket;
 import com.syou.chatroom.utils.CloseUtils;
 
 import java.io.*;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.UUID;
 
 public class TCPClient extends Connector {
+    private final File cachePath;
 
-    public TCPClient(SocketChannel socketChannel) throws IOException {
-       setup(socketChannel);
+    public TCPClient(SocketChannel socketChannel, File cachePath) throws IOException {
+        this.cachePath = cachePath;
+        setup(socketChannel);
     }
 
-    public void exit(){
+    public void exit() {
         CloseUtils.close(this);
     }
 
+
+    @Override
+    protected File createNewReceiveFile() {
+        return Foo.createRandomTemp(cachePath);
+    }
+
+    @Override
+    protected void onReceivedNewPacket(ReceivePacket packet) {
+        super.onReceivedNewPacket(packet);
+        if (packet.type() == Packet.TYPE_MEMORY_STRING) {
+            String string = (String) packet.entity();
+            System.out.println(key.toString() + ":" + string);
+        }
+    }
 
     @Override
     public void onChannelClosed(SocketChannel channel) {
@@ -26,7 +45,7 @@ public class TCPClient extends Connector {
         System.out.println("Connect closed, cannot read data");
     }
 
-    public static TCPClient startWith(ServerInfo info) throws IOException {
+    public static TCPClient startWith(ServerInfo info, File cachePath) throws IOException {
         SocketChannel socketChannel = SocketChannel.open();
 
         //connect server
@@ -38,7 +57,7 @@ public class TCPClient extends Connector {
 
         try {
             // get client
-            return new TCPClient(socketChannel);
+            return new TCPClient(socketChannel, cachePath);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("exit in exception.");

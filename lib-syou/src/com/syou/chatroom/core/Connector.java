@@ -1,5 +1,7 @@
 package com.syou.chatroom.core;
 
+import com.syou.chatroom.box.ByteReceivePacket;
+import com.syou.chatroom.box.FileReceivePacket;
 import com.syou.chatroom.box.StringReceivePacket;
 import com.syou.chatroom.box.StringSendPacket;
 import com.syou.chatroom.impl.SocketChannelAdapter;
@@ -7,12 +9,13 @@ import com.syou.chatroom.impl.async.AsyncReceiveDispatcher;
 import com.syou.chatroom.impl.async.AsyncSendDispatcher;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.UUID;
 
-public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatusChangedListener {
-    private UUID key = UUID.randomUUID();
+public abstract class Connector implements Closeable, SocketChannelAdapter.OnChannelStatusChangedListener {
+    protected UUID key = UUID.randomUUID();
     private SocketChannel channel;
     private Sender sender;
     private Receiver receiver;
@@ -40,6 +43,11 @@ public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatu
         sendDispacher.send(packet);
     }
 
+    public void send(SendPacket packet) {
+        sendDispacher.send(packet);
+    }
+
+    protected abstract File createNewReceiveFile();
 
     @Override
     public void close() throws IOException {
@@ -55,15 +63,31 @@ public class Connector implements Closeable, SocketChannelAdapter.OnChannelStatu
 
     }
 
-
-    protected  void onReceiveNewMessage(String str) {
-        System.out.println(key.toString() + ":" + str);
+    protected  void onReceivedNewPacket(ReceivePacket packet) {
+        System.out.println(key.toString() + ":[New Packet]-Type:"
+                + packet.type() + ", length:" + packet.length());
     }
 
-    private ReceiveDispatcher.ReceivePacketCallback receivePacketCallback = packet -> {
-        if (packet instanceof StringReceivePacket) {
-            String msg = ((StringReceivePacket) packet).string();
-            onReceiveNewMessage(msg);
+    private ReceiveDispatcher.ReceivePacketCallback receivePacketCallback = new ReceiveDispatcher.ReceivePacketCallback() {
+        @Override
+        public ReceivePacket<?, ?> onArrivedNewPacket(byte type, long length) {
+            switch (type) {
+                case Packet.TYPE_MEMORY_BYTES:
+                    return new ByteReceivePacket(length);
+                case Packet.TYPE_MEMORY_STRING:
+                    return new StringReceivePacket(length);
+                case Packet.TYPE_STREAM_FILE:
+                    return new FileReceivePacket(length, createNewReceiveFile());
+                case Packet.TYPE_STREAM_DIRECT:
+                    return new ByteReceivePacket(length);
+                default:
+                    throw new UnsupportedOperationException("Unsupported packet type:" + type);
+            }
+        }
+
+        @Override
+        public void onReceivePacketCompleted(ReceivePacket packet) {
+            onReceivedNewPacket(packet);
         }
     };
 }

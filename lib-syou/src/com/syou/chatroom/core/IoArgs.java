@@ -11,8 +11,8 @@ import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.ExecutorService;
 
 public class IoArgs {
-    private int limit = 5;
-    private ByteBuffer buffer = ByteBuffer.allocate(5);
+    private int limit = 256;
+    private ByteBuffer buffer = ByteBuffer.allocate(256);
 
     /**
      * read data frome bytes

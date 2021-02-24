@@ -3,10 +3,7 @@ package com.syou.chatroom;
 import com.syou.chatroom.handler.ClientHandler;
 import com.syou.chatroom.utils.CloseUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,14 +17,16 @@ import java.util.concurrent.Executors;
 
 public class TCPServer implements ClientHandler.ClientHandlerCallback {
     private final int port;
+    private final File cachePath;
     private ClientListener mListener;
     private List<ClientHandler> clientHandlerList = new ArrayList<>();
     private final ExecutorService forwardingTreadPoolExecutor;
     private Selector selector;
     ServerSocketChannel server;
 
-    public TCPServer(int port) {
+    public TCPServer(int port, File cachePath) {
         this.port = port;
+        this.cachePath = cachePath;
         forwardingTreadPoolExecutor = Executors.newSingleThreadExecutor();
     }
 
@@ -133,7 +132,7 @@ public class TCPServer implements ClientHandler.ClientHandlerCallback {
                             SocketChannel socketChannel = serverSocketChannel.accept();
                             try {
                                 // async clienthandler construct
-                                ClientHandler clientHandler = new ClientHandler(socketChannel, TCPServer.this);
+                                ClientHandler clientHandler = new ClientHandler(socketChannel, TCPServer.this, cachePath);
                                 synchronized (TCPServer.this) {
                                     clientHandlerList.add(clientHandler);
                                 }
