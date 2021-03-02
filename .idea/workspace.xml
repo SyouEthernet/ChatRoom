@@ -5,28 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7c022170-6b7a-4c2f-9174-e56d4d9abb50" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/Client2.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/foo/src/com/syou/chatroom/Foo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/AbsByteArrayReceivePacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/ByteReceivePacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/ByteSendPacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/FileReceivePacket.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Frame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/ds/BytePriorityNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/AbsReceiveFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/AbsSendFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/AbsSendPacketFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/CancelReceiveFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/CancelSendFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/ReceiveEntityFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/ReceiveFrameFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/ReceiveHeaderFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/SendEntityFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/frames/SendHeaderFrame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncPacketReader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncPacketWriter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/com/syou/chatroom/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/com/syou/chatroom/ClientTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/ClientTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/com/syou/chatroom/TCPClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/com/syou/chatroom/TCPClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/FileSendPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/FileSendPacket.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringReceivePacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringReceivePacket.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringSendPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/box/StringSendPacket.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Connector.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Connector.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoArgs.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/IoArgs.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Packet.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/Packet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceiveDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceiveDispatcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceivePacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/ReceivePacket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/core/SendPacket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/SocketChannelAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/SocketChannelAdapter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncReceiveDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncReceiveDispatcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/com/syou/chatroom/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/com/syou/chatroom/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/com/syou/chatroom/TCPServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/com/syou/chatroom/TCPServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/com/syou/chatroom/handler/ClientHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/com/syou/chatroom/handler/ClientHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncSendDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib-syou/src/com/syou/chatroom/impl/async/AsyncSendDispatcher.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +42,14 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
   </component>
   <component name="ProjectId" id="1okgls2p5anALmSnklFSf1hDHVm" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -119,10 +126,11 @@
       <recent name="com.syou.chatroom.box" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.syou.chatroom.frames" />
       <recent name="com.syou.chatroom.box" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Client2">
+  <component name="RunManager" selected="Application.Client">
     <configuration name="Client" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.syou.chatroom.Client" />
       <module name="client" />
@@ -194,9 +202,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Client2" />
         <item itemvalue="Application.Client" />
         <item itemvalue="Application.Server" />
+        <item itemvalue="Application.Client2" />
         <item itemvalue="Application.ClientTest" />
       </list>
     </recent_temporary>

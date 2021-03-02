@@ -46,4 +46,12 @@ public abstract class Packet<Stream extends Closeable> implements Closeable {
             stream = null;
         }
     }
+
+    /**
+     * headerInfo for extend check info
+     * @return byte array, max length 255
+     */
+    public byte[] headerInfo() {
+        return null;
+    }
 }

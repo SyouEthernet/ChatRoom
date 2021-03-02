@@ -2,23 +2,35 @@ package com.syou.chatroom.core;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.ExecutorService;
 
 public class IoArgs {
     private int limit = 256;
     private ByteBuffer buffer = ByteBuffer.allocate(256);
 
     /**
+     * read from byte
+     * @param bytes
+     * @param offset
+     * @param count
+     * @return
+     */
+    public int readFrom(byte[] bytes, int offset, int count) {
+        int size = Math.min(count, buffer.capacity());
+        if (size<=0) {
+            return 0;
+        }
+        buffer.put(bytes, offset, size);
+        return size;
+    }
+
+    /**
      * read data frome bytes
      */
-    public int readFrom(ReadableByteChannel channel) throws IOException{
-        startWriting();
+    public int readFrom(ReadableByteChannel channel) throws IOException {
         int bytesProduced = 0;
         int len;
         do {
@@ -28,7 +40,6 @@ public class IoArgs {
             }
             bytesProduced += len;
         } while (buffer.hasRemaining() && len != 0);
-        finishWriting();
         return bytesProduced;
     }
 
@@ -70,6 +81,18 @@ public class IoArgs {
     }
 
     /**
+     * write to bytes
+     * @param bytes
+     * @return
+     * @throws IOException
+     */
+    public int writeTo(byte[] bytes, int offset) {
+        int size = Math.min(bytes.length - offset, buffer.remaining());
+        buffer.get(bytes, offset, size);
+        return size;
+    }
+
+    /**
      * write to channel
      *
      * @param channel
@@ -107,13 +130,7 @@ public class IoArgs {
      * @param limit
      */
     public void limit(int limit) {
-        this.limit = limit;
-    }
-
-    public void writeLength(int total) {
-        startWriting();
-        buffer.putInt(total);
-        finishWriting();
+        this.limit = Math.min(limit, buffer.capacity());
     }
 
     public int readLength() {
@@ -122,6 +139,22 @@ public class IoArgs {
 
     public int capacity() {
         return buffer.capacity();
+    }
+
+    public boolean remained() {
+        return buffer.remaining() > 0;
+    }
+
+    public int fillEmpty(int size) {
+        int fillSize = Math.min(size, buffer.remaining());
+        buffer.position(buffer.position() + fillSize);
+        return fillSize;
+    }
+
+    public int setEmpty(int size) {
+        int emptySize = Math.min(size, buffer.remaining());
+        buffer.position(buffer.position() + emptySize);
+        return emptySize;
     }
 
     public interface IoArgsEventProcessor {
